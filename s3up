@@ -19,6 +19,7 @@
         echo "-r             Recurse into directories\n";
         echo "-w             Only upload static web files\n";
         echo "-f             Folder in S3\n";
+        echo "-h, --host     S3 host\n";
         echo "\n";
         echo "-u, --key      Amazon S3 key\n";
         echo "-p, --secret   Amazon S3 private key\n";
@@ -33,12 +34,16 @@
 
     $AMZ_KEY = null;
     $AMZ_SECRET = null;
+	$AMZ_HOST = 's3.amazonaws.com';
+
     if(isset($_SERVER['AMZ_KEY'])) $AMZ_KEY = $_SERVER['AMZ_KEY'];
     if(isset($_SERVER['AMZ_SECRET'])) $AMZ_SECRET = $_SERVER['AMZ_SECRET'];
     if(array_key_exists('u', $options)) $AMZ_KEY = $options['u'];
     if(array_key_exists('p', $options)) $AMZ_SECRET = $options['p'];
     if(array_key_exists('key', $options)) $AMZ_KEY = $options['key'];
     if(array_key_exists('secret', $options)) $AMZ_SECRET = $options['secret'];
+    if(array_key_exists('h', $options)) $AMZ_HOST = $options['h'];
+    if(array_key_exists('host', $options)) $AMZ_HOST = $options['host'];
     if(is_null($AMZ_KEY) || is_null($AMZ_SECRET))
         die("Error: Amazon key and secret must be defined!\n");
 
@@ -152,7 +157,7 @@
 
     function upload_static_file($filename, $the_real_file = null)
     {
-        global $AMZ_KEY, $AMZ_SECRET, $options, $base_dir;
+        global $AMZ_KEY, $AMZ_SECRET, $AMZ_HOST, $options, $base_dir;
 
         $bucket_and_path = rtrim($GLOBALS['argv'][$GLOBALS['argc'] - 2], '/') . '/';
         $bucket_list = explode('/', $bucket_and_path);
@@ -189,7 +194,7 @@
         $remote_name = ltrim($remote_name, '/');
 
         // Begin the upload proccess
-        $s3 = new S3($AMZ_KEY, $AMZ_SECRET);
+        $s3 = new S3($AMZ_KEY, $AMZ_SECRET, $AMZ_HOST);
 
         // Should we check to see if the file has already been uploaded?
         $ok_to_upload = true;
